@@ -1,0 +1,28 @@
+{
+  "name": "full-stack-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "module": "main.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhoninn11/full-stack-web.git"
+  },
+  "author": "Marcin Wałęsa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rhoninn11/full-stack-web/issues"
+  },
+  "homepage": "https://github.com/rhoninn11/full-stack-web#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "esm": "^3.0.84",
+    "express": "^4.16.4",
+    "mongodb": "^3.1.10",
+    "mongoose": "^5.3.12"
+  }
+}
