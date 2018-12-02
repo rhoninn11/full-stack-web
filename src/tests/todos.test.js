@@ -86,19 +86,65 @@ describe('To Do functionality', () => {
 
         it('should return 404 with id that not exists', (done) => {
             request(App)
-            .get(`/todos/${new ObjectId().toHexString()}`)
-            .expect(404)
-            .end(done);
+                .get(`/todos/${new ObjectId().toHexString()}`)
+                .expect(404)
+                .end(done);
         });
 
         it('should return to do with proper id', (done) => {
             request(App)
                 .get(`/todos/${todos[0]._id.toHexString()}`)
                 .expect(200)
-                .expect((serverResponse)=>{
+                .expect((serverResponse) => {
                     expect(serverResponse.body.todo.text).toBe(todos[0].text)
                 })
                 .end(done);
+        });
+    });
+
+    describe('DELETE /todos/:id', () => {
+        it('should return 404 for not valid id', (done) => {
+            let id = '123'
+
+            request(App)
+                .delete(`/todos/${id}`)
+                .expect(404)
+                .expect((response) => {
+                    expect(response.body.message).toBe('invalid id')
+                })
+                .end(done);
+        });
+
+        it('should return 404 if id dont exists', (done) => {
+            let id = new ObjectId().toHexString();
+
+            request(App)
+                .delete(`/todos/${id}`)
+                .expect(404)
+                .expect((response) => {
+                    expect(response.body.message).toBe('id dont exists')
+                })
+                .end(done);
+        })
+
+        it('should delete id from database', (done) => {
+            let id = todos[0]._id.toHexString();
+
+            request(App)
+                .delete(`/todos/${id}`)
+                .expect(200)
+                .end((error, response) => {
+                    expect(response.body.todo.text).toBe('First to do text');
+
+                    if (error) {
+                        return done(error);
+                    }
+
+                    ToDo.findById(id).then((todo) => {
+                        expect(todo).toBeNull();
+                        done();
+                    }).catch(e => done(e))
+                });
         });
     });
 });

@@ -21,7 +21,7 @@ app.post('/todos', (request, response) => {
     /** @type {mongoose.Model} */
     let todo = new ToDo(request.body);
     todo.save().then((todo) => {
-        response.send({todo});
+        response.send({ todo });
     }).catch((error) => {
         response.status(400).send(error);
     });
@@ -30,7 +30,7 @@ app.post('/todos', (request, response) => {
 app.get('/todos', (request, response) => {
 
     ToDo.find().then((todos) => {
-        response.send({todos});
+        response.send({ todos });
     }).catch((error) => {
         response.status(400).send(error);
     });
@@ -48,11 +48,29 @@ app.get('/todos/:id', (request, response) => {
             return response.status(404).send();
         }
 
-        response.send({todo});
+        response.send({ todo });
     }).catch((e) => {
         response.status(400).send(e);
     });
 });
+
+app.delete('/todos/:id', (request, response) => {
+    let id = request.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return response.status(404).send({ message: 'invalid id' })
+    }
+
+    ToDo.findByIdAndDelete(id).then((todo) => {
+        if (!todo) {
+            return response.status(404).send({ message: 'id dont exists' });
+        }
+
+        response.send({ todo });
+    }).catch((e) => {
+        response.status(400).send(e)
+    })
+})
 
 app.post('/user', (request, response) => {
 
