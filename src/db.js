@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
-const url = 'mongodb://localhost:27017/TDApp';
+const dbUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017/TDApp';
 
 
 mongoose.Promise = global.Promise;
 mongoose.set('useCreateIndex', true);
-mongoose.connect(url, { useNewUrlParser: true }).catch(error => {
+mongoose.connect(dbUrl, { useNewUrlParser: true }).catch(error => {
     return console.log('db connection error')
 });
 
