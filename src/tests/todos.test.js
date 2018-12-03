@@ -6,10 +6,13 @@ const { ToDo } = require('../models/todo.js');
 
 const todos = [{
     _id: new ObjectId(),
-    text: 'First to do text'
+    text: 'First to do text',
+    completed: false
 }, {
     _id: new ObjectId(),
-    text: 'Second to do text'
+    text: 'Second to do text',
+    completed: true,
+    completedAt: new Date().getTime()
 }]
 
 beforeEach((done) => {
@@ -103,15 +106,12 @@ describe('To Do functionality', () => {
     });
 
     describe('DELETE /todos/:id', () => {
-        it('should return 404 for not valid id', (done) => {
+        it('should return 404 for invalid id', (done) => {
             let id = '123'
 
             request(App)
                 .delete(`/todos/${id}`)
                 .expect(404)
-                .expect((response) => {
-                    expect(response.body.message).toBe('invalid id')
-                })
                 .end(done);
         });
 
@@ -121,9 +121,6 @@ describe('To Do functionality', () => {
             request(App)
                 .delete(`/todos/${id}`)
                 .expect(404)
-                .expect((response) => {
-                    expect(response.body.message).toBe('id dont exists')
-                })
                 .end(done);
         })
 
@@ -144,6 +141,88 @@ describe('To Do functionality', () => {
                         expect(todo).toBeNull();
                         done();
                     }).catch(e => done(e))
+                });
+        });
+    });
+
+    describe('PATCH /todos/:id', () => {
+        it('should return 404 for invalid id', (done) => {
+            let id = '123'
+            request(App)
+                .patch(`/todos/${id}`)
+                .expect(404)
+                .end(done);
+        });
+
+        it('should return 404 id dont exists', (done) => {
+            let id = new ObjectId().toHexString();
+
+            request(App)
+                .patch(`/todos/${id}`)
+                .expect(404)
+                .end(done);
+
+
+        });
+
+        it('should update todo text field', (done) => {
+            let id = todos[0]._id.toHexString();
+            text = 'updated text for first todo';
+
+            request(App)
+                .patch(`/todos/${id}`)
+                .send({ text })
+                .expect(200)
+                .end((error, response) => {
+                    if (error) {
+                        return done(error);
+                    }
+
+                    ToDo.findById(id).then((todo) => {
+                        expect(todo.text).toBe(text);
+                        done();
+                    }).catch(e => done(e));
+                });
+        });
+
+        it('should update todo, compleateAt field is not null when compleate is true', (done) => {
+            let id = todos[0]._id.toHexString();
+            let completed = true;
+
+            request(App)
+                .patch(`/todos/${id}`)
+                .send({ completed })
+                .expect(200)
+                .end((error, response) => {
+                    if (error) {
+                        return done(error);
+                    }
+
+                    ToDo.findById(id).then((todo) => {
+                        expect(todo.completed).toBeTruthy();
+                        expect(todo.completedAt).not.toBeNull();
+                        done();
+                    }).catch(e => done(e));
+                });
+        });
+        it('should update todo, compleateAt field is null when compleate is false', (done) => {
+            let id = todos[1]._id.toHexString();
+            let completed = false;
+
+            request(App)
+                .patch(`/todos/${id}`)
+                .send({ completed })
+                .expect(200)
+                .end((error, response) => {
+                    if (error) {
+                        return done(error);
+                    }
+
+                    ToDo.findById(id).then((todo) => {
+                        expect(todo.completedAt).toBeNull();
+                        expect(todo.completed).toBeFalsy();
+                        done();
+                    }).catch(e => done(e));
                 });
         });
     });

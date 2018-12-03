@@ -1,11 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+
 const { ObjectID } = require('mongodb');
 
 const { dbHook } = require('./db');
 const mongoose = require('mongoose');
 const { ToDo } = require('./models/todo');
 const { User } = require('./models/user');
+
+const _ = require('lodash');
 
 let app = express();
 app.use(bodyParser.json());
@@ -58,19 +61,47 @@ app.delete('/todos/:id', (request, response) => {
     let id = request.params.id;
 
     if (!ObjectID.isValid(id)) {
-        return response.status(404).send({ message: 'invalid id' })
+        return response.send(404, { message: 'invalid id' })
     }
 
     ToDo.findByIdAndDelete(id).then((todo) => {
         if (!todo) {
-            return response.status(404).send({ message: 'id dont exists' });
+            return response.send(404, { message: 'id dont exists' });
         }
 
         response.send({ todo });
     }).catch((e) => {
-        response.status(400).send(e)
+        response.send(400,e)
     })
 })
+
+app.patch('/todos/:id', (request, response) => {
+    let id = request.params.id;
+    let todo = _.pick(request.body, ['text', 'completed']);
+
+    if (!ObjectID.isValid(id)) {
+        return response.send(404, { message: 'invalid id' });
+    }
+
+    if (_.isBoolean(todo.completed) && todo.completed) {
+        todo.completedAt = new Date().getTime();
+    } else {
+        todo.completed = false;
+        todo.completedAt = null;
+    }
+
+    ToDo.findByIdAndUpdate(id, { $set: todo }, { new: true }).then((todo) => {
+        if (!todo) {
+            return response.send(404, { message: 'id dont exists' });
+        }
+
+        response.send(200, { todo });
+    }).catch((e) => {
+        response.send(400,e);
+    });
+
+});
+
 
 app.post('/user', (request, response) => {
 
